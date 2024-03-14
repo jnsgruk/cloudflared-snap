@@ -1,0 +1,70 @@
+name: jnsgruk-cloudflared
+title: cloudflared
+version: 2024.2.1
+
+summary: Unofficial Cloudflare Tunnel client
+description: |
+  A tunneling daemon that proxies traffic from the Cloudflare network to your
+  origins. This daemon sits between Cloudflare network and your origin (e.g. a webserver).
+  Cloudflare attracts client requests and sends them to you via this daemon, without requiring you
+  to poke holes on your firewall --- your origin can remain as closed as possible. Extensive
+  documentation can be found in the Cloudflare Tunnel section of the Cloudflare Docs. All usages
+  related with proxying to your origins are available under cloudflared tunnel help.
+
+  You can also use cloudflared to access Tunnel origins (that are protected with cloudflared
+  tunnel) for TCP traffic at Layer 4 (i.e., not HTTP/websocket), which is relevant for use cases
+  such as SSH, RDP, etc. Such usages are available under cloudflared access help.
+
+  This snap is not maintained or endorsed by Cloudflare, and is intended as a POC.
+
+license: Apache-2.0
+source-code: https://github.com/jnsgruk/cloudflared-snap
+issues: https://github.com/jnsgruk/cloudflared-snap/issues
+contact: https://github.com/jnsgruk/cloudflared-snap/issues
+website: https://www.cloudflare.com/en-gb/products/tunnel/
+icon: snap/gui/cloudflare.png
+
+confinement: strict
+grade: stable
+base: core22
+compression: lzo
+
+architectures:
+  - build-on: arm64
+  - build-on: amd64
+
+# Uncomment this (and plugs in `apps` section) if/when snap is taken on by cloudflare
+# plugs:
+#   etc-cloudflared:
+#     interface: system-files
+#     read:
+#     - /etc/cloudflared
+
+parts:
+  cloudflared:
+    plugin: go
+    source: https://github.com/cloudflare/cloudflared
+    source-type: git
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    override-build: |
+      bash .teamcity/install-cloudflare-go.sh
+      make cloudflared
+      install -Dm 0755 cloudflared $CRAFT_PART_INSTALL/bin/cloudflared
+
+apps:
+  jnsgruk-cloudflared:
+    command: bin/cloudflared
+    plugs:
+      - network
+      - network-bind
+      # - etc-cloudflared
+
+  cloudflared-svc:
+    command: bin/cloudflared --no-autoupdate
+    daemon: simple
+    install-mode: disable
+    restart-condition: always
+    plugs:
+      - network
+      - network-bind
+      # - etc-cloudflared
