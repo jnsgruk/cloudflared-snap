@@ -41,11 +41,18 @@ architectures:
 #     - /etc/cloudflared
 
 parts:
+  local-parts:
+    plugin: dump
+    source: ./snap/local
+    source-type: local
+
   cloudflared:
     plugin: go
     source: https://github.com/cloudflare/cloudflared
     source-type: git
     source-tag: $SNAPCRAFT_PROJECT_VERSION
+    build-snaps:
+      - go
     override-build: |
       bash .teamcity/install-cloudflare-go.sh
       make cloudflared
@@ -59,8 +66,8 @@ apps:
       - network-bind
       # - etc-cloudflared
 
-  cloudflared-svc:
-    command: bin/cloudflared --no-autoupdate
+  cloudflare-tunnel:
+    command: bin/tunnel-svc-wrapper
     daemon: simple
     install-mode: disable
     restart-condition: always

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Run the configure hook which sets defaults for any config options
+"${SNAP}/snap/hooks/configure"
+
+# Grab the config options
+token="$(snapctl get token)"
+
+if [[ -z "${token}" ]]; then
+    echo "No token set. Use 'snap set jnsgruk-cloudflared token=<token>' and try again."
+    exit 1
+fi
+
+# Run cloudflared tunnel service
+exec "${SNAP}/bin/cloudflared" --no-autoupdate tunnel run --token "${token}"
