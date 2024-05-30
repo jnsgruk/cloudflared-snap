@@ -1,6 +1,6 @@
 name: jnsgruk-cloudflared
 title: cloudflared
-version: 2024.2.1
+version: 2024.5.0
 
 summary: Unofficial Cloudflare Tunnel client
 description: |
